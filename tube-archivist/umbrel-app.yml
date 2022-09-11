@@ -1,0 +1,22 @@
+manifestVersion: 1
+id: tube-archivist
+category: Explorers
+name: Tube Archivist
+version: "0.2.1"
+tagline:  Your self hosted YouTube media server 
+description: >-
+    Once your YouTube video collection grows, it becomes hard to search and find a specific video. That's where Tube Archivist comes in: By indexing your video collection with metadata from YouTube, you can organize, search and enjoy your archived YouTube videos without hassle offline through a convenient web interface.
+releaseNotes: >-
+
+developer:  birdwing, DanielBatteryStapler, and PrivateGER 
+website:  www.tubearchivist.com 
+repo: https://github.com/janoside/btc-rpc-explorer
+support: https://github.com/janoside/btc-rpc-explorer/discussions
+port: 8000
+gallery:
+  - 1.jpg
+  - 2.jpg
+  - 3.jpg
+path: ""
+defaultUsername: ""
+defaultPassword: ""

@@ -1,0 +1,71 @@
+version: "3.7"
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: $APP_TUBEARCHIVIST_HOST
+      APP_PORT: $APP_TUBEARCHIVIST_PORT
+  
+  web:
+    image: bbilly1/tubearchivist
+    restart: on-failure
+    stop_grace_period: 1m
+    ports:
+      # Replace <port> with the port that your app's web server
+      # is listening inside the Docker container. If you need to
+      # expose more ports, add them below.
+      - 8000:8000
+    volumes:
+      # Uncomment to mount your data directories inside
+      # the Docker container for storing persistent data
+      - ${APP_DATA_DIR}/media:/youtube
+      - ${APP_DATA_DIR}/cache:/cache
+
+      # Uncomment to mount LND's data directory as read-only
+      # inside the Docker container at path /lnd
+      # - ${APP_LIGHTNING_NODE_DATA_DIR}:/lnd:ro
+
+      # Uncomment to mount Bitcoin Core's data directory as
+      # read-only inside the Docker container at path /bitcoin
+      # - ${APP_BITCOIN_DATA_DIR}:/bitcoin:ro
+    environment:
+          - ES_URL:http://archivist-es:9200     # needs protocol e.g. http and port
+          - REDIS_HOST:archivist-redis          # don't add protocol
+          - HOST_UID:1000
+          - HOST_GID:1000
+          - TA_HOST:tubearchivist.local         # set your host name
+          - TA_USERNAME:tubearchivist           # your initial TA credentials
+          - TA_PASSWORD:verysecret              # your initial TA credentials
+          - ELASTIC_PASSWORD:verysecret         # set password for Elasticsearch
+          - TZ=America/New_York                 # set your time zone
+        depends_on:
+          - archivist-es
+          - archivist-redis
+      archivist-redis:
+        image: redislabs/rejson                 # for arm64 use bbilly1/rejson
+        container_name: archivist-redis
+        restart: unless-stopped
+        expose:
+          - "6379"
+        volumes:
+          - redis:/data
+        depends_on:
+          - archivist-es
+      archivist-es:
+        image: bbilly1/tubearchivist-es         # only for amd64, or use official es 8.3.3
+        container_name: archivist-es
+        restart: unless-stopped
+        environment:
+          - "xpack.security.enabled=true"
+          - "ELASTIC_PASSWORD=verysecret"       # matching Elasticsearch password
+          - "discovery.type=single-node"
+          - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+        ulimits:
+          memlock:
+            soft: -1
+            hard: -1
+        volumes:
+          - es:/usr/share/elasticsearch/data    # check for permission error when using bind mount, see readme
+        expose:
+          - "9200"
+  #   ...
